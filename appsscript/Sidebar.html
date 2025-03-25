@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <style>
+      .sidebar {
+        padding: 10px;
+        font-family: Arial, sans-serif;
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .logo img {
+        width: 80%;
+        max-width: 180px;
+      }
+      .section {
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+      }
+      .section-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1e293b;
+        font-size: 14px;
+      }
+      .action-button {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 8px;
+        background-color: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        text-align: left;
+      }
+      .action-button:hover {
+        background-color: #1d4ed8;
+      }
+      .action-button:last-child {
+        margin-bottom: 0;
+      }
+      .action-button.secondary {
+        background-color: #64748b;
+      }
+      .action-button.secondary:hover {
+        background-color: #475569;
+      }
+      .status {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+      .help-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 10px;
+      }
+      .recent-queries {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .query-item {
+        padding: 8px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .query-item:hover {
+        background-color: #eff6ff;
+      }
+      .query-item:last-child {
+        border-bottom: none;
+      }
+      .query-name {
+        font-weight: bold;
+        margin-bottom: 3px;
+      }
+      .query-date {
+        font-size: 10px;
+        color: #94a3b8;
+      }
+      .footer {
+        font-size: 10px;
+        color: #94a3b8;
+        text-align: center;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="logo">
+        <img src="https://via.placeholder.com/180x60?text=Query+Builder" alt="Query Builder Logo">
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Query Builder</div>
+        <button class="action-button" id="openQueryBuilder">
+          <img src="https://fonts.gstatic.com/s/i/googlematerialicons/build/v11/24px.svg" style="vertical-align: middle; margin-right: 8px;">
+          Open Query Builder
+        </button>
+        <button class="action-button secondary" id="refreshData">
+          <img src="https://fonts.gstatic.com/s/i/googlematerialicons/refresh/v11/24px.svg" style="vertical-align: middle; margin-right: 8px;">
+          Refresh Data Source
+        </button>
+        <div class="status" id="dataStatus">Data source last updated: Today, 2:30 PM</div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Recent Queries</div>
+        <div class="recent-queries" id="recentQueries">
+          <!-- Sample items, these would be populated dynamically -->
+          <div class="query-item">
+            <div class="query-name">Monthly Sales by Region</div>
+            <div class="query-date">Last run: Mar 19, 2025</div>
+          </div>
+          <div class="query-item">
+            <div class="query-name">Customer Retention Analysis</div>
+            <div class="query-date">Last run: Mar 18, 2025</div>
+          </div>
+          <div class="query-item">
+            <div class="query-name">Product Performance Q1</div>
+            <div class="query-date">Last run: Mar 15, 2025</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Quick Actions</div>
+        <button class="action-button secondary" id="exportData">
+          <img src="https://fonts.gstatic.com/s/i/googlematerialicons/download/v11/24px.svg" style="vertical-align: middle; margin-right: 8px;">
+          Export Last Results
+        </button>
+        <button class="action-button secondary" id="saveQuery">
+          <img src="https://fonts.gstatic.com/s/i/googlematerialicons/save/v11/24px.svg" style="vertical-align: middle; margin-right: 8px;">
+          Save Current Query
+        </button>
+      </div>
+      
+      <div class="help-text">
+        Click "Open Query Builder" to create and run custom queries against your data.
+      </div>
+      
+      <div class="footer">
+        Query Builder v1.0.0
+      </div>
+      
+      <!-- Temporary test button for bundle download -->
+      <button class="action-button" id="testFetch" style="background-color: #008000; color: white;">
+        Test Bundle Download
+      </button>
+    </div>
+    
+    <script nonce="<?= nonceValue ?>">
+      // Debug logging function
+      function logDebug(message) {
+        console.log(message);
+        const debugPanel = document.getElementById('debugPanel');
+        if (debugPanel) {
+          const entry = document.createElement('div');
+          entry.textContent = `[${new Date().toISOString().slice(11, 19)}] ${message}`;
+          debugPanel.appendChild(entry);
+          debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        // Attach event listeners only after DOM is fully loaded.
+        document.getElementById('openQueryBuilder').addEventListener('click', function() {
+          google.script.run
+            .withSuccessHandler(function(url) {
+              // Open the modal dialog with the React app.
+              google.script.run.openQueryBuilderDialog();
+            })
+            .getQueryBuilderUrl();
+        });
+        
+        document.getElementById('refreshData').addEventListener('click', function() {
+          const statusElement = document.getElementById('dataStatus');
+          statusElement.textContent = 'Refreshing data...';
+          
+          google.script.run
+            .withSuccessHandler(function(result) {
+              const now = new Date();
+              const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              statusElement.textContent = `Data source last updated: Today, ${timeString}`;
+            })
+            .withFailureHandler(function(error) {
+              statusElement.textContent = `Error refreshing data: ${error}`;
+            })
+            .refreshDataSource();
+        });
+        
+        document.getElementById('exportData').addEventListener('click', function() {
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.success) {
+                alert('Data exported successfully!');
+              } else {
+                alert('Error exporting data: ' + result.error);
+              }
+            })
+            .exportLastResults();
+        });
+        
+        document.getElementById('saveQuery').addEventListener('click', function() {
+          const queryName = prompt('Enter a name for this query:');
+          if (queryName) {
+            google.script.run
+              .withSuccessHandler(function(result) {
+                if (result.success) {
+                  alert('Query saved successfully!');
+                  loadRecentQueries();
+                } else {
+                  alert('Error saving query: ' + result.error);
+                }
+              })
+              .withFailureHandler(function(error) {
+                alert('Error: ' + error);
+              })
+              .saveCurrentQuery(queryName);
+          }
+        });
+        
+        document.getElementById('testFetch').addEventListener('click', testBundleDownload);
+        
+        // Load recent queries when the sidebar loads.
+        loadRecentQueries();
+        
+        // Attach test function to check bundle download.
+        function testBundleDownload() {
+          const url = 'https://casey-foote.github.io/query-builder/assets/query-builder-bundle.js';
+          fetch(url)
+            .then(response => {
+              console.log("Test fetch succeeded, status:", response.status);
+              alert("Test fetch succeeded, status: " + response.status);
+            })
+            .catch(err => {
+              console.error("Test fetch failed:", err);
+              alert("Test fetch failed: " + err);
+            });
+        }
+        
+        // Existing initialization functions for DuckDB and React Query Builder.
+        async function initializeDuckDB() {
+          // ... (existing DuckDB initialization code)
+        }
+        
+        async function loadWorkerScript(url) {
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error("Failed to fetch worker script: " + response.statusText);
+          }
+          const scriptText = await response.text();
+          return URL.createObjectURL(new Blob([scriptText], { type: "application/javascript" }));
+        }
+        
+        async function loadApp() {
+          logDebug("Starting app initialization");
+          try {
+            await initializeDuckDB();
+            
+            const bundle = {
+              mainModule: "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/dist/duckdb-eh.wasm",
+              mainWorker: "https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/dist/duckdb-browser-eh.worker.js"
+            };
+            
+            const workerBlobUrl = await loadWorkerScript(bundle.mainWorker);
+            logDebug("Worker script fetched and blob URL created.");
+            
+            const worker = new Worker(workerBlobUrl, { type: "module" });
+            const memory = new WebAssembly.Memory({ initial: 16384, maximum: 65536 });
+            
+            window.db = new window.duckdb.AsyncDuckDB(new window.duckdb.ConsoleLogger(), worker, { memory });
+            await window.db.instantiate(bundle.mainModule);
+            logDebug("DuckDB WASM instantiated. " + (memory.buffer.byteLength / (1024 * 1024)).toFixed(1) + " MB allocated.");
+            
+            const conn = await window.db.connect();
+            await conn.query("CREATE TABLE IF NOT EXISTS numbers (id INTEGER, name VARCHAR)");
+            const result = await conn.query("SELECT COUNT(*) as count FROM numbers");
+            if (result.toArray()[0].count === 0) {
+              await conn.query("INSERT INTO numbers VALUES (1, 'one'), (2, 'two'), (3, 'three')");
+              logDebug("Inserted sample data into 'numbers' table.");
+            }
+            conn.close();
+            
+            logDebug("DuckDB WASM fully initialized.");
+            document.getElementById("loaderContainer").style.display = "none";
+          } catch (error) {
+            logDebug("Error during DuckDB initialization: " + error.message);
+            document.getElementById("loaderContainer").innerHTML = `
+              <div style="text-align:center;padding:20px;">
+                <div style="color:red;font-weight:bold;margin-bottom:10px;">Error</div>
+                <div>${error.message || "An unknown error occurred"}</div>
+              </div>
+            `;
+            throw error;
+          }
+        }
+        
+        // Updated initializeQueryBuilder function that checks for the default export if needed.
+        function initializeQueryBuilder() {
+          try {
+            const container = document.getElementById('queryBuilderApp');
+            let qb = window.QueryBuilderApp;
+            if (!qb || typeof qb.initialize !== 'function') {
+              if (qb && qb.default && typeof qb.default.initialize === 'function') {
+                qb = qb.default;
+              } else {
+                logDebug("ERROR: QueryBuilderApp object or initialize method not found");
+                return;
+              }
+            }
+            qb.initialize(container, {
+              onDataLoaded: function() {
+                logDebug('Data loaded callback received');
+                document.getElementById('loaderContainer').style.display = 'none';
+              },
+              onError: function(error) {
+                logDebug('Error callback: ' + error.message);
+                console.error('Query Builder Error:', error);
+                document.getElementById('loaderContainer').innerHTML = `
+                  <div style="text-align:center;padding:20px;">
+                    <div style="color:red;font-weight:bold;margin-bottom:10px;">Error</div>
+                    <div>${error.message || 'An unknown error occurred'}</div>
+                  </div>
+                `;
+              }
+            });
+            logDebug("QueryBuilderApp.initialize() completed");
+          } catch (error) {
+            logDebug("Error initializing QueryBuilderApp: " + error.message);
+            console.error(error);
+          }
+        }
+        
+        window.addEventListener('load', function() {
+          loadApp().then(() => {
+            initializeQueryBuilder();
+          }).catch(error => {
+            logDebug("Failed to initialize app: " + error);
+          });
+        });
+        
+        function closeDialog() {
+          logDebug("Closing dialog");
+          google.script.host.close();
+        }
+        
+        function saveQuery() {
+          logDebug("Save query button clicked");
+          const queryConfig = window.QueryBuilderApp.getCurrentConfig();
+          logDebug("Query config retrieved");
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.success) {
+                logDebug("Query saved successfully");
+                alert("Query saved successfully!");
+              } else {
+                logDebug("Failed to save query: " + result.error);
+                alert("Failed to save query: " + result.error);
+              }
+            })
+            .withFailureHandler(function(error) {
+              logDebug("Error saving query: " + error);
+              alert("Error: " + error);
+            })
+            .saveQueryConfiguration(queryConfig);
+        }
+        
+        function applyResults() {
+          logDebug("Apply results button clicked");
+          const queryResults = window.QueryBuilderApp.getCurrentResults();
+          logDebug("Results retrieved");
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.success) {
+                logDebug("Results applied successfully");
+                alert("Results applied successfully!");
+                closeDialog();
+              } else {
+                logDebug("Failed to apply results: " + result.error);
+                alert("Failed to apply results: " + result.error);
+              }
+            })
+            .withFailureHandler(function(error) {
+              logDebug("Error applying results: " + error);
+              alert("Error: " + error);
+            })
+            .applyQueryResults(queryResults);
+        }
+        
+        function handleMessage(event) {
+          const message = event.data;
+          logDebug("Message received: " + JSON.stringify(message));
+          switch (message.action) {
+            case "LOAD_QUERY":
+              window.QueryBuilderApp.loadConfig(message.config);
+              break;
+            case "REFRESH_DATA":
+              window.QueryBuilderApp.refreshData();
+              break;
+            default:
+              logDebug("Unknown message action: " + message.action);
+          }
+        }
+        
+        window.addEventListener("message", handleMessage);
+      });
+    </script>
+    
+    <script nonce="<?= nonceValue ?>">
+      // Temporary debug panel element
+      // (This can be hidden by default; the debug toggle button will show/hide it.)
+      (function() {
+        var debugPanel = document.createElement('div');
+        debugPanel.id = 'debugPanel';
+        debugPanel.style.display = 'none';
+        document.body.appendChild(debugPanel);
+      })();
+    </script>
+  </body>
+</html>
