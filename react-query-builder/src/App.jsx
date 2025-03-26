@@ -23,14 +23,15 @@ function App() {
           mainWorker: "https://casey-foote.github.io/material-react-table-query-builder/assets/duckdb/duckdb-browser-eh.worker.js",
         };
 
-        console.log("📦 Fetching worker...");
-        const workerSrc = await fetch(bundle.mainWorker).then((r) => r.text());
+        //console.log("📦 Fetching worker...");
+        //const workerSrc = await fetch(bundle.mainWorker).then((r) => r.text());
 
-        console.log("📦 Creating blob...");
-        const blob = new Blob([workerSrc], { type: "application/javascript" });
+        //console.log("📦 Creating blob...");
+        //const blob = new Blob([workerSrc], { type: "application/javascript" });
 
         console.log("🧠 Creating worker...");
-        const worker = new Worker(URL.createObjectURL(blob)); // 🔧 FIXED LINE (removed { type: "module" })
+        //const worker = new Worker(URL.createObjectURL(blob)); // 🔧 FIXED LINE (removed { type: "module" })
+        const worker = new Worker(bundle.mainWorker); // ✅ load directly from https://casey-foote...
 
         console.log("🔧 Creating AsyncDuckDB...");
         const dbInstance = new duckdb.AsyncDuckDB(logger, worker);
