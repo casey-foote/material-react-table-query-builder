@@ -6,6 +6,7 @@ export default defineConfig({
   build: {
     sourcemap: true,
     outDir: '../assets',
+    emptyOutDir: false,
     rollupOptions: {
       output: {
         entryFileNames: 'query-builder-bundle.js',
